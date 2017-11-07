@@ -1,0 +1,103 @@
+<?php
+
+/**
+ * Helper function for saving a new record in the database.
+ * @param  $message     The contents of the sent mail.
+ * @param  $verifykey   The unique verify key that was generated.
+ */
+function _key_verify_record_new_entry($message, $verifykey = NULL) {
+  $record = new stdClass;
+  $record->created = REQUEST_TIME;
+  $record->message = $message;
+  $record->verifykey = ($verifykey ? $verifykey : uuid_generate());
+
+  $recorded = drupal_write_record('key_verify', $record);
+  if ($recorded) {
+    return $record;
+  }
+  else {
+    return false;
+  }
+}
+
+/**
+ * Load a verify key.
+ * @param  string   $key  The Verify Key that we are looking up in the database
+ * @return                The key object or false.
+ */
+function _key_verify_load_verify_key($key) {
+  $result = array();
+
+  // Find instances of key where the key is the same as $key
+  $results = db_select('key_verify', 'l')
+    ->fields('l')
+    ->condition('l.verifykey', $key,'=')
+    ->execute();
+
+  foreach ($results as $key => $value) {
+    $result[] = $value;
+  }
+
+  // We know that there will only be one unique key so we can
+  // target the first result.
+  if (isset($result[0])) {
+    $r = $result[0];
+    $message = unserialize($r->message);
+    $r->message = $message;
+    return $r;
+  }
+  else {
+    return false;
+  }
+}
+
+
+/**
+ * Checks the status of the verify key.
+ * @param  string   $key  The Verify Key that we are looking up in the database
+ * @return                The status of the verify key. Generally will be either 'active' or 'inactive'.
+ *                        Will return false if key does not exist.
+ */
+function _key_verify_verify_key_status($key) {
+  $result = array();
+
+  // Find instances of key where the key is the same as $key
+  $results = db_select('key_verify', 'l')
+    ->fields('l')
+    ->condition('l.verifykey', $key,'=')
+    ->execute();
+
+  foreach ($results as $key => $value) {
+    $result[] = $value;
+  }
+
+  // We know that there will only be one unique key so we can
+  // target the first result.
+  if (isset($result[0])) {
+    $status = $result[0]->verifykey_status;
+    return $status;
+  }
+  else {
+    return false;
+  }
+}
+
+/**
+ * Helper function to change the status of the verify key.
+ * @param  $key       The unique verify key.
+ * @param  $status    The new status you would like to set the for the key.
+ */
+function _key_verify_change_verify_key_status($key, $status) {
+  $result = array();
+
+  // Find instances of key where the key is the same as $key
+  $results = db_select('key_verify', 'l')
+    ->fields('l')
+    ->condition('l.verifykey', $key,'=')
+    ->execute();
+
+  foreach ($results as $key => $record) {
+    $record->verifykey_status = $status;
+    drupal_write_record('key_verify', $record, 'key_id');
+  }
+}

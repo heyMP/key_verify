@@ -1,0 +1,4 @@
+name = Key Verify
+description = Create and verify custom keys
+core = 7.x
+dependencies[] = uuid:uuid

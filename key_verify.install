@@ -1,0 +1,50 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ *
+ * @ingroup listserv
+ */
+function key_verify_schema() {
+  $schema = array();
+
+  // The name of the table can be any name we choose. However, namespacing the
+  // table with the module name is best practice.
+  $schema['key_verify'] = array(
+    'description' => 'The base table for our key entity.',
+    'fields' => array(
+      'key_id' => array(
+        'description' => 'Primary key of the key entity.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp of the entity creation time.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'message' => array(
+        'description' => 'Optional message.',
+        'type' => 'blob',
+        'size' => 'normal',
+        'not null' => FALSE,
+      ),
+      'verifykey' => array(
+        'description' => 'The unique key used to verify email.',
+        'type' => 'varchar',
+        'length' => 64,
+      ),
+      'verifykey_status' => array(
+        'description' => 'The status of the verifykey.',
+        'type' => 'varchar',
+        'length' => 64,
+        'default' => 'active',
+      ),
+    ),
+    'primary key' => array('key_id'),
+  );
+
+  return $schema;
+}
